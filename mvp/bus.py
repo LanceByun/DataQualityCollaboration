@@ -6,9 +6,6 @@ API_URL = "https://apis.data.go.kr/6410000/busarrivalservice/v2/getBusArrivalLis
 
 
 def get_bus_arrival(station_id):
-    if not BUS_API_KEY:
-        raise RuntimeError("BUS_API_KEY is not set. Please add it to .env")
-
     params = {
         "serviceKey": BUS_API_KEY,
         "stationId": station_id,
@@ -18,25 +15,27 @@ def get_bus_arrival(station_id):
     try:
         response = requests.get(API_URL, params=params, timeout=10)
         response.raise_for_status()
-        data = response.json()
-    except requests.RequestException as e:
-        raise RuntimeError(f"API failure: {e}")
-    except ValueError:
-        raise RuntimeError("API failure: invalid JSON response")
+        payload = response.json()
+    except requests.RequestException as error:
+        raise RuntimeError(f"API request failure: {error}") from error
+    except ValueError as error:
+        raise RuntimeError(f"API response JSON parse failure: {error}") from error
 
     try:
-        bus_list = data["response"]["msgBody"]["busArrivalList"]
-    except (KeyError, TypeError):
+        bus_list = payload["response"]["msgBody"]["busArrivalList"]
+    except (KeyError, TypeError) as error:
+        raise RuntimeError(f"API response format error: {error}") from error
+
+    if not isinstance(bus_list, list):
         return []
 
-    results = []
-    for item in bus_list:
-        results.append(
+    result = []
+    for bus in bus_list:
+        result.append(
             {
-                "route": item.get("routeName"),
-                "time1": item.get("predictTime1"),
-                "time2": item.get("predictTime2"),
+                "route": bus.get("routeName"),
+                "time1": bus.get("predictTime1"),
+                "time2": bus.get("predictTime2"),
             }
         )
-
-    return results
+    return result

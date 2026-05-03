@@ -4,21 +4,24 @@ from pathlib import Path
 STATIONS_FILE = Path(__file__).resolve().parent / "data" / "stations.json"
 
 
-def find_station(keyword):
+def load_stations():
+    with STATIONS_FILE.open("r", encoding="utf-8") as file:
+        data = json.load(file)
+
+    if not isinstance(data, list):
+        return []
+    return data
+
+
+def find_station(keyword, stations):
+    keyword = (keyword or "").strip().lower()
     if not keyword:
         return []
 
-    try:
-        with STATIONS_FILE.open("r", encoding="utf-8") as f:
-            stations = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return []
-
-    keyword = keyword.strip().lower()
     matches = []
     for station in stations:
-        name = str(station.get("STATION_NM", ""))
-        if keyword in name.lower():
+        station_name = str(station.get("STATION_NM", ""))
+        if keyword in station_name.lower():
             matches.append(station)
 
     return matches[:5]
