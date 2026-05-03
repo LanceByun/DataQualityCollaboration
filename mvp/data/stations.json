@@ -1,0 +1,14 @@
+[
+  {
+    "STATION_NM": "메타폴리스(중)",
+    "STATION_ID": "123000123"
+  },
+  {
+    "STATION_NM": "수원역환승센터",
+    "STATION_ID": "200000001"
+  },
+  {
+    "STATION_NM": "판교역동편",
+    "STATION_ID": "241000234"
+  }
+]
